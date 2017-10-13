@@ -137,6 +137,15 @@ let autoComplete = (function(){
                 }
             }, that.sc);
 
+            live('autocomplete-suggestion', 'touchstart', function(e){
+                if (hasClass(this, 'autocomplete-suggestion')) { // else outside touch
+                    const v = this.getAttribute('data-val');
+                    that.value = v;
+                    o.onSelect(e, v, this);
+                    that.sc.style.display = 'none';
+                }
+            }, that.sc);
+
             that.blurHandler = function(){
                 let over_sb;
                 try {
