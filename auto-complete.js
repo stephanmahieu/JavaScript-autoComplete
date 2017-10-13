@@ -78,7 +78,7 @@ let autoComplete = (function(){
             that.sc.className = 'autocomplete-suggestions '+o.menuClass;
 
             that.autocompleteAttr = that.getAttribute('autocomplete');
-            that.setAttribute('autocomplete', 'off');
+            that.setAttribute('autocomplete', 'false');
             that.cache = {};
             that.last_val = '';
 
