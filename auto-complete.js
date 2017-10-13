@@ -17,9 +17,6 @@ let autoComplete = (function(){
         }
 
         // helpers
-        function hasClass(el, className) {
-            return el.classList ? el.classList.contains(className) : new RegExp('\\b'+ className+'\\b').test(el.className);
-        }
         function addEvent(el, type, handler) {
             if (el.attachEvent) {
                 el.attachEvent('on'+type, handler);
@@ -38,7 +35,7 @@ let autoComplete = (function(){
         function live(elClass, event, cb, context){
             addEvent(context || document, event, function(e){
                 let found, el = e.target || e.srcElement;
-                while (el && !(found = hasClass(el, elClass))) {
+                while (el && !(found = el.classList.contains(elClass))) {
                     el = el.parentElement;
                 }
                 if (found) {
@@ -75,7 +72,10 @@ let autoComplete = (function(){
 
             // create suggestions container "sc"
             that.sc = document.createElement('div');
-            that.sc.className = 'autocomplete-suggestions '+o.menuClass;
+            that.sc.classList.add('autocomplete-suggestions');
+            if (o.menuClass) {
+                that.sc.classList.add(o.menuClass);
+            }
 
             that.autocompleteAttr = that.getAttribute('autocomplete');
             that.setAttribute('autocomplete', 'false');
@@ -116,20 +116,20 @@ let autoComplete = (function(){
             live('autocomplete-suggestion', 'mouseleave', function(/* e */) {
                 const sel = that.sc.querySelector('.autocomplete-suggestion.selected');
                 if (sel) {
-                    setTimeout(function(){sel.className = sel.className.replace('selected', ''); }, 20);
+                    setTimeout(function(){ sel.classList.remove('selected'); }, 20);
                 }
             }, that.sc);
 
             live('autocomplete-suggestion', 'mouseover', function(/* e */) {
                 const sel = that.sc.querySelector('.autocomplete-suggestion.selected');
                 if (sel) {
-                    sel.className = sel.className.replace('selected', '');
+                    sel.classList.remove('selected');
                 }
-                this.className += ' selected';
+                this.classList.add('selected');
             }, that.sc);
 
             live('autocomplete-suggestion', 'mousedown', function(e) {
-                if (hasClass(this, 'autocomplete-suggestion')) { // else outside click
+                if (this.classList.contains('autocomplete-suggestion')) { // else outside click
                     const v = this.getAttribute('data-val');
                     that.value = v;
                     o.onSelect(e, v, this);
@@ -138,7 +138,7 @@ let autoComplete = (function(){
             }, that.sc);
 
             live('autocomplete-suggestion', 'touchstart', function(e){
-                if (hasClass(this, 'autocomplete-suggestion')) { // else outside touch
+                if (this.classList.contains('autocomplete-suggestion')) { // else outside touch
                     const v = this.getAttribute('data-val');
                     that.value = v;
                     o.onSelect(e, v, this);
@@ -186,17 +186,17 @@ let autoComplete = (function(){
                     let next, sel = that.sc.querySelector('.autocomplete-suggestion.selected');
                     if (!sel) {
                         next = (key === 40) ? that.sc.querySelector('.autocomplete-suggestion') : that.sc.childNodes[that.sc.childNodes.length - 1]; // first : last
-                        next.className += ' selected';
+                        next.classList.add('selected');
                         that.value = next.getAttribute('data-val');
                     } else {
                         next = (key === 40) ? sel.nextSibling : sel.previousSibling;
                         if (next) {
-                            sel.className = sel.className.replace('selected', '');
-                            next.className += ' selected';
+                            sel.classList.remove('selected');
+                            next.classList.add('selected');
                             that.value = next.getAttribute('data-val');
                         }
                         else {
-                            sel.className = sel.className.replace('selected', '');
+                            sel.classList.remove('selected');
                             that.value = that.last_val; next = 0;
                         }
                     }
