@@ -86,7 +86,7 @@ let autoComplete = (function(){
                 const rect = elem.getBoundingClientRect();
                 elem.sc.style.left = Math.round(rect.left + (window.pageXOffset || document.documentElement.scrollLeft) + defaultOptions.offsetLeft) + 'px';
                 elem.sc.style.top = Math.round(rect.bottom + (window.pageYOffset || document.documentElement.scrollTop) + defaultOptions.offsetTop) + 'px';
-                elem.sc.style.width = Math.round(rect.right - rect.left) + 'px'; // outerWidth
+                elem.sc.style.width = Math.max(100, Math.round(rect.right - rect.left)) + 'px'; // outerWidth (SJM: minimum width 100px)
                 if (!resize) {
                     elem.sc.style.display = 'block';
                     if (!elem.sc.maxHeight) {
