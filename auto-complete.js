@@ -62,7 +62,10 @@ let autoComplete = (function(){
             onSelect: function(e, term, item){}
         };
         for (let k in options) {
-            if (options.hasOwnProperty(k)) defaultOptions[k] = options[k];
+            // add custom options to defaultOptions
+            if (options.hasOwnProperty(k)) {
+                defaultOptions[k] = options[k];
+            }
         }
 
         // init
@@ -219,7 +222,7 @@ let autoComplete = (function(){
             };
             addEvent(elem, 'keydown', elem.keydownHandler);
 
-            elem.keyupHandler = function(e){
+            elem.keyupHandler = function(e) {
                 const key = window.event ? e.keyCode : e.which;
                 if (!key || (key < 35 || key > 40) && key !== 13 && key !== 27) {
                     const val = elem.value;
@@ -251,17 +254,23 @@ let autoComplete = (function(){
             };
             addEvent(elem, 'keyup', elem.keyupHandler);
 
-            elem.focusHandler = function(e){
+            elem.focusHandler = function(e) {
                 elem.last_val = '\n';
                 elem.keyupHandler(e)
             };
             if (!defaultOptions.minChars) {
                 addEvent(elem, 'focus', elem.focusHandler);
             }
+
+            elem.mouseDownHandler = function(e) {
+                elem.last_val = '\n';
+                elem.keyupHandler(e)
+            };
+            addEvent(elem, 'mousedown', elem.mouseDownHandler);
         }
 
         // public destroy method
-        this.destroy = function(){
+        this.destroy = function() {
             for (let i=0; i<elems.length; i++) {
                 let that = elems[i];
                 removeEvent(window, 'resize', that.updateSC);
