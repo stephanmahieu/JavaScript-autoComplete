@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8"/>
+    <title>Demo adding Auto-complete on demand</title>
+    <link rel="stylesheet" href="auto-complete.css">
+    <style media="screen" type="text/css">
+        label {min-width:110px; display: inline-block}
+        input {margin-right: 30px}
+    </style>
+</head>
+<body>
+    <h3>Demo - Adding auto-complete on demand dynamically</h3>
+    <form id="testformSmall" name="Just a test for auto-complete">
+        <label for="text-input">Standard text: </label><input type="text" id="text-input"/>
+        <label for="small-input">Small input: </label><input type="text" id="small-input" style="width: 50px"/>
+        <label>Input without id: </label><input type="text" name="noid-input" style="width: 150px"/>
+        <br/><br/>
+        <label for="password">Password: </label><input type="password" id="password" autocomplete="off"/>
+        <label for="large-input">Large input: </label><input type="text" id="large-input" style="width: 350px"/>
+        <br/><br/>
+        <label for="autocomplete">Autocomp false: </label><input type="text" id="autocomplete" autocomplete="false"/>
+        <label for="fhc_html5_date">Date: </label><input type="date" id="fhc_html5_date" style="background-color: #FFEEEE;"/>
+        <br/><br/>
+        <label for="fhc_html5_tel" >Telephone: </label><input type="tel" id="fhc_html5_tel" style="background-color: #FFEEEE;" pattern="^((\+\d{1,3}(-| )?\(?\d\)?(-| )?\d{1,5})|(\(?\d{2,6}\)?))(-| )?(\d{3,4})(-| )?(\d{4})$" placeholder="telephone..." required/>
+        <label for="fhc_html5_url">URL: </label><input type="url" id="fhc_html5_url" style="background-color: #FFEEEE;" placeholder="URL" required />
+        <br/><br/>
+        <label for="fhc_html5_email">Email address: </label><input type="email" id="fhc_html5_email" style="background-color: #FFEEEE;" placeholder="email address" required/>
+        <label for="fhc_html5_search">Search field: </label><input type="search" id="fhc_html5_search" style="background-color: #FFEEEE;" placeholder="search..."/>
+        <br/><br/>
+        <label for="fhc_html5_range">Range: </label><input id="fhc_html5_range" type="range" min="1" max="100" value="0">
+        <br/><br/>
+        <label for="fhc_html5_color">Color: </label><input id="fhc_html5_color" type="color">
+        <br/><br/><br/>
+    </form>
+
+    <script src="auto-complete.js"></script>
+    <script>
+        document.querySelectorAll('input[type=text],input[type=search],input[type=tel],input[type=url],input[type=email]').forEach( elem => {
+            elem.addEventListener("keydown", addAutocomplete);
+            elem.addEventListener("mousedown", addAutocomplete);
+            elem.addEventListener("blur", removeAutocomplete);
+        });
+
+        const autocompleteMap = new Map();
+
+        function getKey(elem) {
+            return elem.id?elem.id:Math.random().toString();
+        }
+
+        function addAutocomplete(event) {
+            const elem = event.target;
+            // add autocomplete to the element only once
+            if (elem.hasAttribute('data-fhc')) {
+                return;
+            }
+            const key = getKey(elem);
+            elem.setAttribute('data-fhc', key);
+
+            console.log('Adding autocomplete to id: ' + elem.id + ', key: ' + key);
+
+            autocompleteMap.set(key, new autoComplete({
+                selector: elem,
+                minChars: 0,
+                source: getSuggestions
+            }));
+        }
+
+        function getSuggestions(term, suggest) {
+            console.log('getting options for term [' + term + ']...');
+            term = term.toLowerCase();
+            let choices = ['ActionScript', 'AppleScript', 'Asp', 'Assembly', 'BASIC', 'Batch', 'C', 'C++', 'CSS', 'Clojure', 'COBOL', 'ColdFusion', 'Erlang', 'Fortran', 'Groovy', 'Haskell', 'HTML', 'Java', 'JavaScript', 'Lisp', 'Perl', 'PHP', 'PowerShell', 'Python', 'Ruby', 'Scala', 'Scheme', 'SQL', 'TeX', 'XML'];
+            let suggestions = [];
+            for (let i=0;i<choices.length;i++) {
+                if (~choices[i].toLowerCase().indexOf(term)) {
+                    suggestions.push(choices[i]);
+                }
+            }
+            suggest(suggestions);
+        }
+
+        function removeAutocomplete(event) {
+            const elem = event.target;
+            if (elem.hasAttribute('data-fhc')) {
+                const key = elem.getAttribute('data-fhc');
+                elem.removeAttribute('data-fhc');
+
+                if (autocompleteMap.has(key)) {
+                    console.log('Removing autocomplete from id: ' + elem.id + ', key: ' + key);
+                    let autoCompleteObj = autocompleteMap.get(key);
+                    autocompleteMap.delete(key);
+                    autoCompleteObj.destroy();
+                    autoCompleteObj = null;
+                }
+            }
+        }
+    </script>
+</body>
+</html>
