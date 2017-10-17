@@ -19,36 +19,16 @@
     14-10-2017
       - changed minWidth to option, more variables renamed, ditch multibrowser support (support firefox and chrome)
       - Display suggestion box on mousedown for an already focused element
-    16-20-2017
+    17-10-2017
       - Change version to v1.1.0
+      - Converted into a class
       - Revert to using 'off' as attribute value for disabling autocomplete
-      - Added element parameter to suggest method
-      - Removed alternative module support
+      - Added fieldName parameter to suggest method
 */
 
-let autoComplete = (function(){
-    // "use strict";
-    function autoComplete(customOptions) {
+class AutoComplete {
 
-        // helpers
-        function addEvent(el, type, handler) {
-            el.addEventListener(type, handler);
-        }
-        function removeEvent(el, type, handler) {
-            el.removeEventListener(type, handler);
-        }
-        function live(elClass, eventType, cb, context){
-            addEvent(context || document, eventType, event => {
-                let found, el = event.target || event.srcElement;
-                while (el && !(found = el.classList.contains(elClass))) {
-                    el = el.parentElement;
-                }
-                if (found) {
-                    cb.call(el, event);
-                }
-            });
-        }
-
+    constructor(customOptions) {
         const options = {
             selector: 0,
             source: 0,
@@ -75,8 +55,8 @@ let autoComplete = (function(){
         }
 
         // init
-        const elems = typeof options.selector === 'object' ? [options.selector] : document.querySelectorAll(options.selector);
-        elems.forEach(elem => {
+        this.elems = typeof options.selector === 'object' ? [options.selector] : document.querySelectorAll(options.selector);
+        this.elems.forEach(elem => {
             // create suggestions container "sc"
             elem.sc = document.createElement('div');
             elem.sc.classList.add('autocomplete-suggestions');
@@ -117,38 +97,45 @@ let autoComplete = (function(){
                     }
                 }
             };
-            addEvent(window, 'resize', elem.updateSC);
+            this._addEvent(window, 'resize', elem.updateSC);
             document.body.appendChild(elem.sc);
 
-            live('autocomplete-suggestion', 'mouseleave', () => {
+            this._live('autocomplete-suggestion', 'mouseleave', () => {
                 const sel = elem.sc.querySelector('.autocomplete-suggestion.selected');
                 if (sel) {
                     setTimeout(()=>{ sel.classList.remove('selected'); }, 20);
                 }
             }, elem.sc);
 
-            live('autocomplete-suggestion', 'mouseover', function() {
+
+            this._live('autocomplete-suggestion', 'mouseover', event => {
                 const sel = elem.sc.querySelector('.autocomplete-suggestion.selected');
                 if (sel) {
                     sel.classList.remove('selected');
                 }
-                this.classList.add('selected');
+                // event.target might be the <b>...</b> part, in that case we need the parent
+                const item = this._getSuggestionNode(event.target);
+                item.classList.add('selected');
             }, elem.sc);
 
-            live('autocomplete-suggestion', 'mousedown', function(e) {
-                if (this.classList.contains('autocomplete-suggestion')) { // else outside click
-                    const v = this.getAttribute('data-val');
+            this._live('autocomplete-suggestion', 'mousedown', event => {
+                // event.target might be the <b>...</b> part, in that case we need the parent
+                const item = this._getSuggestionNode(event.target);
+                if (item.classList.contains('autocomplete-suggestion')) { // else outside click
+                    const v = item.getAttribute('data-val');
                     elem.value = v;
-                    options.onSelect(e, v, this);
+                    options.onSelect(event, v, item);
                     elem.sc.style.display = 'none';
                 }
             }, elem.sc);
 
-            live('autocomplete-suggestion', 'touchstart', function(e) {
-                if (this.classList.contains('autocomplete-suggestion')) { // else outside touch
-                    const v = this.getAttribute('data-val');
+            this._live('autocomplete-suggestion', 'touchstart', event => {
+                // event.target might be the <b>...</b> part, in that case we need the parent
+                const item = this._getSuggestionNode(event.target);
+                if (item.classList.contains('autocomplete-suggestion')) { // else outside touch
+                    const v = item.getAttribute('data-val');
                     elem.value = v;
-                    options.onSelect(e, v, this);
+                    options.onSelect(event, v, item);
                     elem.sc.style.display = 'none';
                 }
             }, elem.sc);
@@ -168,7 +155,7 @@ let autoComplete = (function(){
                     setTimeout(()=>{ elem.focus(); }, 20);
                 }
             };
-            addEvent(elem, 'blur', elem.blurHandler);
+            this._addEvent(elem, 'blur', elem.blurHandler);
 
             const suggest = data => {
                 const val = elem.value;
@@ -224,7 +211,7 @@ let autoComplete = (function(){
                     }
                 }
             };
-            addEvent(elem, 'keydown', elem.keydownHandler);
+            this._addEvent(elem, 'keydown', elem.keydownHandler);
 
             elem.keyupHandler = event => {
                 const key = window.event ? event.keyCode : event.which;
@@ -256,45 +243,66 @@ let autoComplete = (function(){
                     }
                 }
             };
-            addEvent(elem, 'keyup', elem.keyupHandler);
+            this._addEvent(elem, 'keyup', elem.keyupHandler);
 
             elem.focusHandler = event => {
                 elem.last_val = '\n';
                 elem.keyupHandler(event)
             };
             if (!options.minChars) {
-                addEvent(elem, 'focus', elem.focusHandler);
+                this._addEvent(elem, 'focus', elem.focusHandler);
             }
 
             elem.mouseDownHandler = event => {
                 elem.last_val = '\n';
                 elem.keyupHandler(event)
             };
-            addEvent(elem, 'mousedown', elem.mouseDownHandler);
+            this._addEvent(elem, 'mousedown', elem.mouseDownHandler);
         });
-
-        // public destroy method
-        this.destroy = () => {
-            elems.forEach(elem => {
-                removeEvent(window, 'resize', elem.updateSC);
-                removeEvent(elem, 'blur', elem.blurHandler);
-                removeEvent(elem, 'focus', elem.focusHandler);
-                removeEvent(elem, 'keydown', elem.keydownHandler);
-                removeEvent(elem, 'keyup', elem.keyupHandler);
-                if (elem.autocompleteAttr) {
-                    elem.setAttribute('autocomplete', elem.autocompleteAttr);
-                }
-                else {
-                    elem.removeAttribute('autocomplete');
-                }
-                document.body.removeChild(elem.sc);
-                elem = null;
-            });
-        };
     }
-    return autoComplete;
-})();
 
-(function(){
-    window.autoComplete = autoComplete;
-})();
+    // public destroy method
+    destroy() {
+        this.elems.forEach(elem => {
+            this._removeEvent(window, 'resize', elem.updateSC);
+            this._removeEvent(elem, 'blur', elem.blurHandler);
+            this._removeEvent(elem, 'focus', elem.focusHandler);
+            this._removeEvent(elem, 'keydown', elem.keydownHandler);
+            this._removeEvent(elem, 'keyup', elem.keyupHandler);
+            if (elem.autocompleteAttr) {
+                elem.setAttribute('autocomplete', elem.autocompleteAttr);
+            }
+            else {
+                elem.removeAttribute('autocomplete');
+            }
+            document.body.removeChild(elem.sc);
+            elem = null;
+        });
+    }
+
+
+    // helpers
+    _addEvent(el, type, handler) {
+        el.addEventListener(type, handler);
+    }
+    _removeEvent(el, type, handler) {
+        el.removeEventListener(type, handler);
+    }
+    _live(elClass, eventType, cb, context){
+        this._addEvent(context || document, eventType, event => {
+            let found, el = event.target || event.srcElement;
+            while (el && !(found = el.classList.contains(elClass))) {
+                el = el.parentElement;
+            }
+            if (found) {
+                cb.call(el, event);
+            }
+        });
+    }
+    _getSuggestionNode(element) {
+        while (element && !element.classList.contains('autocomplete-suggestion')) {
+            element = element.parentNode;
+        }
+        return element;
+    }
+}

@@ -59,14 +59,14 @@
 
             console.log('Adding autocomplete to id: ' + elem.id + ', key: ' + key);
 
-            autocompleteMap.set(key, new autoComplete({
+            autocompleteMap.set(key, new AutoComplete({
                 selector: elem,
                 minChars: 0,
                 source: getSuggestions
             }));
         }
 
-        function getSuggestions(term, suggest) {
+        function getSuggestions(term, fieldname, suggest) {
             console.log('getting options for term [' + term + ']...');
             term = term.toLowerCase();
             let choices = ['ActionScript', 'AppleScript', 'Asp', 'Assembly', 'BASIC', 'Batch', 'C', 'C++', 'CSS', 'Clojure', 'COBOL', 'ColdFusion', 'Erlang', 'Fortran', 'Groovy', 'Haskell', 'HTML', 'Java', 'JavaScript', 'Lisp', 'Perl', 'PHP', 'PowerShell', 'Python', 'Ruby', 'Scala', 'Scheme', 'SQL', 'TeX', 'XML'];
