@@ -1,12 +1,29 @@
 /*
-    JavaScript autoComplete v1.0.4
+    JavaScript autoComplete v1.1.0
+
+    Forked: 13 oct 2017
+    GitHub: https://github.com/stephanmahieu/JavaScript-autoComplete
+
+    Original version:
     Copyright (c) 2014 Simon Steinberger / Pixabay
-    GitHub: https://github.com/Pixabay/JavaScript-autoComplete
+    GitHub : https://github.com/Pixabay/JavaScript-autoComplete
     License: http://www.opensource.org/licenses/mit-license.php
 
-    Forked by Stephan Mahieu
-    Date: 13 oct 2017
-    GitHub: https://github.com/stephanmahieu/JavaScript-autoComplete
+    Changes:
+    13-10-2017
+      - Forked the 10-10-2016 v1.0.4 Pixabay version
+      - Added minimum width of 100px for the suggestion box
+      - Use 'false' as attribute value for disabling autocomplete
+      - Add touchstart event
+      - Variables renamed, prettified, missing semicolons added, changed var to const or let, use classList
+    14-10-2017
+      - changed minWidth to option, more variables renamed, ditch multibrowser support (support firefox and chrome)
+      - Display suggestion box on mousedown for an already focused element
+    16-20-2017
+      - Change version to v1.1.0
+      - Revert to using 'off' as attribute value for disabling autocomplete
+      - Added element parameter to suggest method
+      - Removed alternative module support
 */
 
 let autoComplete = (function(){
@@ -68,7 +85,7 @@ let autoComplete = (function(){
             }
 
             elem.autocompleteAttr = elem.getAttribute('autocomplete');
-            elem.setAttribute('autocomplete', 'false');
+            elem.setAttribute('autocomplete', 'off');
             elem.cache = {};
             elem.last_val = '';
 
@@ -231,7 +248,7 @@ let autoComplete = (function(){
                                     }
                                 }
                             }
-                            elem.timer = setTimeout(()=>{ options.source(val, suggest) }, options.delay);
+                            elem.timer = setTimeout(()=>{ options.source(val, elem, suggest) }, options.delay);
                         }
                     } else {
                         elem.last_val = val;
@@ -279,10 +296,5 @@ let autoComplete = (function(){
 })();
 
 (function(){
-    if (typeof define === 'function' && define.amd)
-        define('autoComplete', function () { return autoComplete; });
-    else if (typeof module !== 'undefined' && module.exports)
-        module.exports = autoComplete;
-    else
-        window.autoComplete = autoComplete;
+    window.autoComplete = autoComplete;
 })();
