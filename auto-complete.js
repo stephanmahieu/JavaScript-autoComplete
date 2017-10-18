@@ -187,7 +187,6 @@ class AutoComplete {
                 else if (key === 40 && !elem.sc.innerHTML) {
                     console.log('Please display SC choices');
                     options.source(elem.value, elem, suggest);
-                    return;
                 }
                 // esc
                 else if (key === 27) {
