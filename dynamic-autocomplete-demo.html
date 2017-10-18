@@ -37,8 +37,7 @@
     <script src="auto-complete.js"></script>
     <script>
         document.querySelectorAll('input[type=text],input[type=search],input[type=tel],input[type=url],input[type=email]').forEach( elem => {
-            elem.addEventListener("keydown", addAutocomplete);
-            elem.addEventListener("mousedown", addAutocomplete);
+            elem.addEventListener("focus", addAutocomplete);
             elem.addEventListener("blur", removeAutocomplete);
         });
 
