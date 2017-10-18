@@ -1,29 +1,15 @@
 /*
-    JavaScript autoComplete v1.1.0
+    JavaScript autoComplete v2.0.0
 
     Forked: 13 oct 2017
     GitHub: https://github.com/stephanmahieu/JavaScript-autoComplete
+
+    This adaptation is specifically tailored for use by a Firefox/Chrome plugin.
 
     Original version:
     Copyright (c) 2014 Simon Steinberger / Pixabay
     GitHub : https://github.com/Pixabay/JavaScript-autoComplete
     License: http://www.opensource.org/licenses/mit-license.php
-
-    Changes:
-    13-10-2017
-      - Forked the 10-10-2016 v1.0.4 Pixabay version
-      - Added minimum width of 100px for the suggestion box
-      - Use 'false' as attribute value for disabling autocomplete
-      - Add touchstart event
-      - Variables renamed, prettified, missing semicolons added, changed var to const or let, use classList
-    14-10-2017
-      - changed minWidth to option, more variables renamed, ditch multibrowser support (support firefox and chrome)
-      - Display suggestion box on mousedown for an already focused element
-    17-10-2017
-      - Change version to v1.1.0
-      - Converted into a class
-      - Revert to using 'off' as attribute value for disabling autocomplete
-      - Added fieldName parameter to suggest method
 */
 
 class AutoComplete {
@@ -197,12 +183,18 @@ class AutoComplete {
                     elem.updateSC(0, next);
                     return false;
                 }
+                // down arrow with purpose to display suggestions
+                else if (key === 40 && !elem.sc.innerHTML) {
+                    console.log('Please display SC choices');
+                    options.source(elem.value, elem, suggest);
+                    return;
+                }
                 // esc
                 else if (key === 27) {
                     elem.value = elem.last_val;
                     elem.sc.style.display = 'none';
                 }
-                // enter
+                // enter or tab
                 else if (key === 13 || key === 9) {
                     const sel = elem.sc.querySelector('.autocomplete-suggestion.selected');
                     if (sel && elem.sc.style.display !== 'none') {
@@ -215,9 +207,14 @@ class AutoComplete {
 
             elem.keyupHandler = event => {
                 const key = window.event ? event.keyCode : event.which;
-                if (!key || (key < 35 || key > 40) && key !== 13 && key !== 27) {
+                if (!key || (key < 35 || key > 40) && key !== 13 && key !== 27 && key !== 16) {
                     const val = elem.value;
                     if (val.length >= options.minChars) {
+                        if (key === 9 && !elem.sc.innerHTML) {
+                            // tabbing into a field should not immediately display suggestions
+                            elem.last_val = val;
+                            return;
+                        }
                         if (val !== elem.last_val) {
                             elem.last_val = val;
                             clearTimeout(elem.timer);
@@ -254,8 +251,15 @@ class AutoComplete {
             }
 
             elem.mouseDownHandler = event => {
-                elem.last_val = '\n';
-                elem.keyupHandler(event)
+                // toggle, only display choices every other click
+                if (elem.sc) {
+                    if (!elem.sc.style.display || elem.sc.style.display === 'none') {
+                        elem.last_val = '\n';
+                        elem.keyupHandler(event)
+                    } else {
+                        elem.sc.style.display = 'none';
+                    }
+                }
             };
             this._addEvent(elem, 'mousedown', elem.mouseDownHandler);
         });
@@ -269,6 +273,7 @@ class AutoComplete {
             this._removeEvent(elem, 'focus', elem.focusHandler);
             this._removeEvent(elem, 'keydown', elem.keydownHandler);
             this._removeEvent(elem, 'keyup', elem.keyupHandler);
+            this._removeEvent(elem, 'mousedown', elem.mouseDownHandler);
             if (elem.autocompleteAttr) {
                 elem.setAttribute('autocomplete', elem.autocompleteAttr);
             }

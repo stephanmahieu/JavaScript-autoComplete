@@ -12,7 +12,8 @@ This version is an adaptation specifically tailored for use by a modern Firefox/
 ## Changelog
 
 ### Date 18-10-2017
-* Mimic key/mouse-handling of Firefox (down arrow or second mouse-click to trigger autocompletion)
+* Change version to v2.0.0
+* Mimic key/mouse-handling of standard Firefox autocomplete (down arrow or second mouse-click to trigger autocompletion)
 * Remove mousedown eventhandler in destroy method
 
 ### Date 17-10-2017
