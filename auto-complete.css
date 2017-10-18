@@ -25,7 +25,7 @@
     color: #333;
 }
 .autocomplete-suggestion b {
-    font-weight: normal;
+    /*font-weight: normal;*/
     color: #b300b5;
     border-bottom: 1px dotted #0900da;
     /*background-color: #fbff92;*/
