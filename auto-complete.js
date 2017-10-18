@@ -29,12 +29,33 @@ class AutoComplete {
                 // escape special characters
                 search = search.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&');
                 const re = new RegExp("(" + search.split(' ').join('|') + ")", "gi");
-                return '<div class="autocomplete-suggestion" data-val="' + item + '">' + item.replace(re, "<b>$1</b>") + '</div>';
+
+                const div = document.createElement('div');
+                div.classList.add('autocomplete-suggestion');
+                div.setAttribute('data-val', item);
+
+                if (search) {
+                    search = search.toLowerCase();
+                    item.split(re).forEach(term => {
+                        if (term.toLowerCase() === search) {
+                            let b = document.createElement('b');
+                            b.appendChild(document.createTextNode(term));
+                            div.appendChild(b);
+                        } else if (term) {
+                            div.appendChild(document.createTextNode(term));
+                        }
+                    });
+                } else {
+                    div.appendChild(document.createTextNode(item));
+                }
+                // '<div class="autocomplete-suggestion" data-val="' + item + '">' + item.replace(re, "<b>$1</b>") + '</div>';
+                return div;
             },
             onSelect: (e, term, item) => {}
         };
+
+        // add custom options to defaultOptions
         for (let k in customOptions) {
-            // add custom options to defaultOptions
             if (customOptions.hasOwnProperty(k)) {
                 options[k] = customOptions[k];
             }
@@ -147,11 +168,12 @@ class AutoComplete {
                 const val = elem.value;
                 elem.cache[val] = data;
                 if (data.length && val.length >= options.minChars) {
-                    let s = '';
-                    for (let i=0;i<data.length;i++) {
-                        s += options.renderItem(data[i], val);
+                    while (elem.sc.firstChild) {
+                        elem.sc.removeChild(elem.sc.firstChild);
                     }
-                    elem.sc.innerHTML = s;
+                    data.forEach(item => {
+                        elem.sc.appendChild(options.renderItem(item, val));
+                    });
                     elem.updateSC(0);
                 }
                 else {
