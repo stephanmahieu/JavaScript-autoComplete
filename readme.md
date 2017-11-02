@@ -11,6 +11,9 @@ This version is an adaptation specifically tailored for use by a modern Firefox/
 
 ## Changelog
 
+### Date 02-11-2017
+* prevent submitting a form when enter key is pressed to choose a suggestion
+
 ### Date 18-10-2017
 * Change version to v2.0.0
 * Mimic key/mouse-handling of standard Firefox autocomplete (down arrow or second mouse-click to trigger autocompletion)
